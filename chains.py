@@ -57,7 +57,7 @@ def get_vector_store():
 
 def get_retreiver_chain(vector_store):
 
-    llm = ChatOpenAI(model = "gpt-5-nano", temperature = 0, verbosity="low", reasoning_effort="low")
+    llm = ChatOpenAI(model = st.secrets["MODEL_NAME"], temperature = 0, verbosity="low", reasoning_effort="low")
 
     faiss_retriever = vector_store.as_retriever(
        search_kwargs={"k": 5},
@@ -85,7 +85,7 @@ def get_retreiver_chain(vector_store):
 
 def get_conversational_rag(history_retriever_chain):
   # Create end-to-end RAG chain
-  llm = ChatOpenAI(model = "gpt-5-nano", temperature = 0, verbosity="medium", reasoning_effort="medium", streaming=True)
+  llm = ChatOpenAI(model = st.secrets["MODEL_NAME"], temperature = 0, verbosity="medium", reasoning_effort="medium", streaming=True)
 
   answer_prompt = ChatPromptTemplate.from_messages([
       ("system",SYSTEM_PROMPT+"\n\n{context}"),
