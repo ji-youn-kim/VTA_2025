@@ -17,38 +17,87 @@ load_dotenv()
 
 os.environ["LANGCHAIN_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
+def parse_folder_date_to_datetime(folder_name):
+    try:
+        year_short, month, day = folder_name.split('.')
+        year = int('20' + year_short)
+        month = int(month)
+        day = int(day)
+        return datetime.datetime(year, month, day, 12, 0, 0)
+    except ValueError:
+        print(f"Invalid folder name format: {folder_name}")
+        return None
 
 def load_documents_process_vectorize(todo_documents_path, past_documents_path):
     total_docs = []
 
-    for filename in os.listdir(todo_documents_path):
-        file_path = os.path.join(todo_documents_path, filename)
+    for subfolder in os.listdir(todo_documents_path):
+        subfolder_path = os.path.join(todo_documents_path, subfolder)
+        if not os.path.isdir(subfolder_path):
+            continue
 
-        if filename.endswith('.txt'):
-            loader = TextLoader(file_path)
-            docs = loader.load()
+        folder_datetime = parse_folder_date_to_datetime(subfolder)
+        if folder_datetime is None:
+            continue
+
+        print(f"Processing folder: {subfolder} -> {folder_datetime}")
+
+        for filename in os.listdir(subfolder_path):
+            file_path = os.path.join(subfolder_path, filename)
+
+            docs = []
+
+            if filename.endswith('.txt'):
+                loader = TextLoader(file_path)
+                docs = loader.load()
+            elif filename.endswith('.pdf'):
+                loader = PDFMinerLoader(file_path)
+                docs = loader.load()
+                if docs:
+                    docs[0].page_content = docs[0].page_content.replace('\x0c', " ")
+                    docs[0].page_content = docs[0].page_content.replace('\n', " ")
+                    docs[0].page_content = re.sub(r'\s{2,}', " ", docs[0].page_content)
+                    docs[0].page_content = docs[0].page_content.strip()
+            elif filename.endswith('.ipynb'):
+                loader = NotebookLoader(file_path, include_outputs=False, remove_newline=True)
+                docs = loader.load()
+
+            for doc in docs:
+                doc.metadata['timestamp'] = folder_datetime
+                doc.metadata['folder_date'] = subfolder
+
             total_docs.extend(docs)
 
-        elif filename.endswith('.pdf'):
-            loader = PDFMinerLoader(file_path)
-            docs = loader.load()
-            docs[0].page_content = docs[0].page_content.replace('\x0c', " ")
-            docs[0].page_content = docs[0].page_content.replace('\n', " ")
-            docs[0].page_content = re.sub(r'\s{2,}', " ", docs[0].page_content)
-            docs[0].page_content = docs[0].page_content.strip()
-            total_docs.extend(docs)
+            shutil.move(file_path, os.path.join(past_documents_path, subfolder, filename))
 
-        elif filename.endswith('.ipynb'):
-            loader = NotebookLoader(file_path, include_outputs=False, remove_newline=True)
-            docs = loader.load()
-            total_docs.extend(docs)
+    # for filename in os.listdir(todo_documents_path):
+    #     file_path = os.path.join(todo_documents_path, filename)
 
-        shutil.move(file_path, os.path.join(past_documents_path, filename))
+    #     if filename.endswith('.txt'):
+    #         loader = TextLoader(file_path)
+    #         docs = loader.load()
+    #         total_docs.extend(docs)
+
+    #     elif filename.endswith('.pdf'):
+    #         loader = PDFMinerLoader(file_path)
+    #         docs = loader.load()
+    #         docs[0].page_content = docs[0].page_content.replace('\x0c', " ")
+    #         docs[0].page_content = docs[0].page_content.replace('\n', " ")
+    #         docs[0].page_content = re.sub(r'\s{2,}', " ", docs[0].page_content)
+    #         docs[0].page_content = docs[0].page_content.strip()
+    #         total_docs.extend(docs)
+
+    #     elif filename.endswith('.ipynb'):
+    #         loader = NotebookLoader(file_path, include_outputs=False, remove_newline=True)
+    #         docs = loader.load()
+    #         total_docs.extend(docs)
+
+    #     shutil.move(file_path, os.path.join(past_documents_path, filename))
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2048, chunk_overlap=256)
     splits = text_splitter.split_documents(total_docs)
     for doc in splits:
-        doc.page_content = "Source : " + os.path.basename(doc.metadata["source"]) + "\n" + doc.page_content
+        doc.page_content = "Source : " + f"({doc.metadata.get('folder_date', '')})" + os.path.basename(doc.metadata["source"]) + "\n" + doc.page_content
 
     vectorstore = FAISS.from_documents(documents=splits, embedding=OpenAIEmbeddings(model = "text-embedding-3-large"))
     
