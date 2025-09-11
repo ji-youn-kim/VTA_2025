@@ -68,31 +68,8 @@ def load_documents_process_vectorize(todo_documents_path, past_documents_path):
 
             total_docs.extend(docs)
 
+            os.makedirs(os.path.join(past_documents_path, subfolder), exist_ok=True)
             shutil.move(file_path, os.path.join(past_documents_path, subfolder, filename))
-
-    # for filename in os.listdir(todo_documents_path):
-    #     file_path = os.path.join(todo_documents_path, filename)
-
-    #     if filename.endswith('.txt'):
-    #         loader = TextLoader(file_path)
-    #         docs = loader.load()
-    #         total_docs.extend(docs)
-
-    #     elif filename.endswith('.pdf'):
-    #         loader = PDFMinerLoader(file_path)
-    #         docs = loader.load()
-    #         docs[0].page_content = docs[0].page_content.replace('\x0c', " ")
-    #         docs[0].page_content = docs[0].page_content.replace('\n', " ")
-    #         docs[0].page_content = re.sub(r'\s{2,}', " ", docs[0].page_content)
-    #         docs[0].page_content = docs[0].page_content.strip()
-    #         total_docs.extend(docs)
-
-    #     elif filename.endswith('.ipynb'):
-    #         loader = NotebookLoader(file_path, include_outputs=False, remove_newline=True)
-    #         docs = loader.load()
-    #         total_docs.extend(docs)
-
-    #     shutil.move(file_path, os.path.join(past_documents_path, filename))
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2048, chunk_overlap=256)
     splits = text_splitter.split_documents(total_docs)
