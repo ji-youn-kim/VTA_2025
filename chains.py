@@ -18,7 +18,7 @@ SYSTEM_PROMPT = (
     "1st week, 9/2 (Tuesday), Introduction(https://www.youtube.com/watch?v=T9o_ZQl5Ux0), 9/4 (Thursday), Numpy and Numpy Practice Session(https://www.youtube.com/watch?v=sn0GM41Dy74)\n"
     "2nd week, 9/9 (Tuesday), Basic Machine Learning + Scikit-learn(https://www.youtube.com/watch?v=sgm8DTnS9fA), 9/11 (Thursday), Basic Machine Learning + Scikit-learn Practice Session(https://www.youtube.com/watch?v=xEIbWXeoOPg)\n"
     "3rd week, 9/16 (Tuesday), PyTorch (Autograd) + Logistic Regression + Multi-layer Perceptron(https://www.youtube.com/watch?v=yNdYhcnZ338), 9/18 (Thursday), PyTorch (Autograd) + Logistic Regression + Multi-layer Perceptron Practice Session(https://www.youtube.com/watch?v=uuSIBiBSD8s)\n"
-    "4th week, 9/23 (Tuesday), Autoencoders (& Denoising Autoencoders), 9/25 (Thursday), Autoencoders (& Denoising Autoencoders) Practice Session\n"
+    "4th week, 9/23 (Tuesday), Autoencoders (& Denoising Autoencoders)(https://www.youtube.com/watch?v=qwQD4dmQSXY), 9/25 (Thursday), Autoencoders (& Denoising Autoencoders) Practice Session\n"
     "5th week, 9/30 (Tuesday), Variational Autoencoders, 10/2 (Thursday), Variational Autoencoders Practice Session\n"
     "6th week, 10/7 (Tuesday), Generative Adversarial Networks, 10/9 (Thursday), Generative Adversarial Networks Practice Session\n"
     "7th week, 10/14 (Tuesday), Convolutional Neural Networks, 10/16 (Thursday), Convolutional Neural Networks Practice Session\n"
