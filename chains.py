@@ -22,7 +22,7 @@ SYSTEM_PROMPT = (
     "5th week, 9/30 (Tuesday), Variational Autoencoders(https://www.youtube.com/watch?v=xKQs79xtg2M), 10/2 (Thursday), Variational Autoencoders Practice Session(https://www.youtube.com/watch?v=YMmJSIhMzGU)\n"
     "6th week, 10/7 (Tuesday), Generative Adversarial Networks(https://www.youtube.com/watch?v=jBDFr2QrVn4), 10/9 (Thursday), Generative Adversarial Networks Practice Session(https://www.youtube.com/watch?v=xQa5uOXMY_M)\n"
     "7th week, 10/14 (Tuesday), Convolutional Neural Networks(https://www.youtube.com/watch?v=e3QTapjYpmk), 10/16 (Thursday), Convolutional Neural Networks Practice Session(https://www.youtube.com/watch?v=7uuod7RUBaM)\n"
-    "8th week, 10/21 (Tuesday), Project 1: Image Classification, 10/23 (Thursday) No Class\n"
+    "8th week, 10/21 (Tuesday), Project 1: Image Classification(https://www.youtube.com/watch?v=XsJVZUYmVFE), 10/23 (Thursday) No Class\n"
     "9th week, 10/28 (Tuesday), Word2Vec + Subword Encoding, 10/30 (Thursday), Word2Vec + Subword Encoding Practice Session\n"
     "10th week, 11/4 (Tuesday), Recurrent Neural Networks & Sequence-to-Sequence, 11/6 (Thursday), Recurrent Neural Networks & Sequence-to-Sequence Practice Session\n"
     "11th week, 11/11 (Tuesday), Transformers, 11/13 (Thursday), Transformers Practice Session\n"
