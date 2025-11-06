@@ -76,35 +76,58 @@ def load_documents_process_vectorize(todo_documents_path, past_documents_path):
     for doc in splits:
         doc.page_content = "Source : " + f"({doc.metadata.get('folder_date', '')})" + os.path.basename(doc.metadata["source"]) + "\n" + doc.page_content
 
-    vectorstore = FAISS.from_documents(documents=splits, embedding=OpenAIEmbeddings(model = "text-embedding-3-large"))
+    if not splits:
+        print("Warning: No documents found to process. Returning empty splits and None vectorstore.")
+        return splits, None
+
+    # Create embeddings with batching to avoid token limit errors
+    embedding = OpenAIEmbeddings(model="text-embedding-3-large")
+    
+    # Batch size: ~100 chunks per batch (conservative estimate to stay under 300k token limit)
+    # Each chunk is ~2048 tokens, so 100 chunks ≈ 200k tokens (well under 300k limit)
+    batch_size = 100
+    vectorstore = None
+    
+    for i in range(0, len(splits), batch_size):
+        batch = splits[i:i + batch_size]
+        print(f"Processing batch {i // batch_size + 1} of {(len(splits) + batch_size - 1) // batch_size} ({len(batch)} documents)")
+        
+        if vectorstore is None:
+            # Create vectorstore with first batch
+            vectorstore = FAISS.from_documents(documents=batch, embedding=embedding)
+        else:
+            # Add subsequent batches to existing vectorstore
+            vectorstore.add_documents(batch)
     
     return splits, vectorstore
 
 
-def save(faiss_vectorstore_path, doc_path, past_database):
+def save(faiss_vectorstore_path, doc_path, past_database, docs, vectorstore):
     # "index.faiss"와 "index.pkl" 파일이 존재하는지 확인
     index_faiss = os.path.join(faiss_vectorstore_path, "index.faiss")
     index_pkl = os.path.join(faiss_vectorstore_path, "index.pkl")
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
     
-    if os.path.exists(index_faiss) and os.path.exists(index_pkl):
-        # 기존 벡터 스토어 로드
-        past_vector_store = FAISS.load_local(
-            faiss_vectorstore_path, embeddings=OpenAIEmbeddings(model="text-embedding-3-large"), allow_dangerous_deserialization=True
-        )
-        vectorstore.merge_from(past_vector_store)
+    # 벡터 스토어 저장 처리 (vectorstore가 None이 아닌 경우에만)
+    if vectorstore is not None:
+        if os.path.exists(index_faiss) and os.path.exists(index_pkl):
+            # 기존 벡터 스토어 로드
+            past_vector_store = FAISS.load_local(
+                faiss_vectorstore_path, embeddings=OpenAIEmbeddings(model="text-embedding-3-large"), allow_dangerous_deserialization=True
+            )
+            vectorstore.merge_from(past_vector_store)
+            
+            # 현재 날짜-시간으로 폴더 생성
+            backup_dir = os.path.join(past_database, timestamp)
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            # 기존 인덱스 파일 이동
+            shutil.move(index_faiss, os.path.join(backup_dir, "index.faiss"))
+            shutil.move(index_pkl, os.path.join(backup_dir, "index.pkl"))
         
-        # 현재 날짜-시간으로 폴더 생성
-        backup_dir = os.path.join(past_database, timestamp)
-        os.makedirs(backup_dir, exist_ok=True)
-        
-        # 기존 인덱스 파일 이동
-        shutil.move(index_faiss, os.path.join(backup_dir, "index.faiss"))
-        shutil.move(index_pkl, os.path.join(backup_dir, "index.pkl"))
-    
-    # 벡터 스토어 저장
-    vectorstore.save_local(faiss_vectorstore_path)
+        # 벡터 스토어 저장
+        vectorstore.save_local(faiss_vectorstore_path)
 
     # doc_path에 doc.jsonl이 존재하는지 확인
     doc_jsonl = os.path.join(doc_path, "doc.jsonl")
@@ -121,4 +144,4 @@ def save(faiss_vectorstore_path, doc_path, past_database):
 
 
 docs, vectorstore = load_documents_process_vectorize("todo_documents", "past_documents")
-save("faiss_db","docs","backup")
+save("faiss_db", "docs", "backup", docs, vectorstore)
